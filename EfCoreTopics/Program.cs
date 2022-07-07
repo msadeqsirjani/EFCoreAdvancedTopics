@@ -23,6 +23,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-BenchmarkRunner.Run<EfCoreChangeTrackerBenchmark>();
+//BenchmarkRunner.Run<EfCoreChangeTrackerBenchmark>();
 
 app.Run();
