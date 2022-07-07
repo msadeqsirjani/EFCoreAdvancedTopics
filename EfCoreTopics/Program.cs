@@ -1,3 +1,5 @@
+using BenchmarkDotNet.Running;
+using EfCoreTopics.ChangeTrackerBenchmark;
 using EfCoreTopics.Database;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,5 +22,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+
+BenchmarkRunner.Run<EfCoreChangeTrackerBenchmark>();
 
 app.Run();
