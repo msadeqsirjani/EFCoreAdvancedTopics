@@ -1,5 +1,6 @@
 ﻿using EfCoreTopics.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EfCoreTopics.Controllers;
 
@@ -15,18 +16,22 @@ public class AdventureWorkController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IResult> GetNonInterpolatedAddresses(int id) =>
-        Results.Ok(await _context.GetAddressNonInterpolatedAsync(id));
+    public async Task<IActionResult> GetNonInterpolatedAddresses(int id) =>
+        Ok(await _context.GetAddressNonInterpolatedAsync(id));
 
     [HttpGet]
-    public async Task<IResult> GetInterpolatedAddresses(int id) =>
-        Results.Ok(await _context.GetAddressInterpolatedAsync(id));
+    public async Task<IActionResult> GetInterpolatedAddresses(int id) =>
+        Ok(await _context.GetAddressInterpolatedAsync(id));
 
     [HttpPost]
-    public async Task<IResult> UpdateCity(int id, string city) =>
-        Results.Ok(await _context.UpdateCityAddressAsync(id, city));
+    public async Task<IActionResult> UpdateCity(int id, string city) =>
+        Ok(await _context.UpdateCityAddressAsync(id, city));
 
     [HttpGet]
-    public async Task<IResult> GetCityWithProvince() =>
-        Results.Ok(await _context.GetCityWithProvince());
+    public async Task<IActionResult> GetCityWithProvince() =>
+        Ok(await _context.GetCityWithProvince());
+
+    [HttpGet]
+    public async Task<IActionResult> GetAddress(string contain) =>
+        Ok(await _context.Addresses.Where(x => x.SearchTerm.Contains(contain)).ToListAsync());
 }

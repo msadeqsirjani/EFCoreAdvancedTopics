@@ -1,4 +1,5 @@
-﻿namespace EfCoreTopics.Database.Models;
+﻿
+namespace EfCoreTopics.Database.Models;
 
 /// <summary>
 /// Street address information for customers.
@@ -45,6 +46,8 @@ public class Address
     /// Date and time the record was last updated.
     /// </summary>
     public DateTime ModifiedDate { get; set; }
+
+    public string SearchTerm { get; private set; }
 
     public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; }
     public virtual ICollection<SalesOrderHeader> SalesOrderHeaderBillToAddresses { get; set; }

@@ -90,6 +90,8 @@ public class AdventureWorksContext : DbContext
             entity.Property(e => e.StateProvince)
                 .HasMaxLength(50)
                 .HasComment("Name of state or province.");
+
+            entity.Property(e => e.SearchTerm).HasComputedColumnSql("[City] + ',' + [PostalCode]");
         });
 
         modelBuilder.Entity<BuildVersion>(entity =>
