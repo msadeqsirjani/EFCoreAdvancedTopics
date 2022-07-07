@@ -1,4 +1,5 @@
 ﻿using EfCoreTopics.Database.Models;
+using EfCoreTopics.Database.Models.NonKeyModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace EfCoreTopics.Database;
@@ -29,13 +30,14 @@ public class AdventureWorksContext : DbContext
     public virtual DbSet<VGetAllCategory> VGetAllCategories { get; set; } = null!;
     public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
     public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
+    public virtual DbSet<CityWithProvince> CityWithProvinces { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
-        {
             optionsBuilder.UseSqlServer("Server=.;Database=AdventureWorks;Trusted_Connection=True;");
-        }
+
+        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -787,11 +789,23 @@ public class AdventureWorksContext : DbContext
             entity.Property(e => e.Wheel).HasMaxLength(256);
         });
 
-        OnModelCreatingPartial(modelBuilder);
+        modelBuilder.Entity<CityWithProvince>(e =>
+        {
+            e.HasNoKey();
+            e.Property(x => x.Id).HasColumnName("AddressID");
+            e.Property(x => x.Provice).HasColumnName("StateProvince");
+        });
     }
 
-    private void OnModelCreatingPartial(ModelBuilder modelBuilder)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<List<Address>> GetAddressNonInterpolatedAsync(int id) => 
+        Addresses.FromSqlRaw("SELECT * FROM [SalesLT].[Address] WHERE AddressID > {0}", id).ToListAsync();
+
+    public Task<List<Address>> GetAddressInterpolatedAsync(int id) =>
+        Addresses.FromSqlInterpolated($"SELECT * FROM [SalesLT].[Address] WHERE AddressID > {id}").ToListAsync();
+
+    public async Task<int> UpdateCityAddressAsync(int id, string city) => 
+        await Database.ExecuteSqlInterpolatedAsync($"UPDATE [SalesLT].[Address] SET City = {city} WHERE AddressID = {id}");
+
+    public async Task<List<CityWithProvince>> GetCityWithProvince() => await CityWithProvinces
+        .FromSqlRaw("SELECT [AddressID], [City], [StateProvince] FROM [SalesLT].[Address]").ToListAsync();
 }
