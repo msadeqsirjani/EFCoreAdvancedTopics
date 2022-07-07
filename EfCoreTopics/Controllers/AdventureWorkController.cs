@@ -1,5 +1,6 @@
 ﻿using EfCoreTopics.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace EfCoreTopics.Controllers;
@@ -42,4 +43,8 @@ public class AdventureWorkController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllCategories() =>
         Ok(await _context.GetAllCategories().ToListAsync());
+
+    [HttpGet]
+    public async Task<IActionResult> GetCategories(int categoryId) =>
+        Ok(await _context.VGetAllCategories.Where(x => x.ProductCategoryId > categoryId).ToListAsync());
 }

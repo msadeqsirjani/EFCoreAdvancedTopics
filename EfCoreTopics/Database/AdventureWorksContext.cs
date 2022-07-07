@@ -735,7 +735,7 @@ public class AdventureWorksContext : DbContext
 
         modelBuilder.Entity<VProductModelCatalogDescription>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasNoKey(); // keyless entity
 
             entity.ToView("vProductModelCatalogDescription", "SalesLT");
 
