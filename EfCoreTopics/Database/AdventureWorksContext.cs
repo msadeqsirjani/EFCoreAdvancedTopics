@@ -1,4 +1,5 @@
 ﻿using EfCoreTopics.Database.Models;
+using EfCoreTopics.Database.Models.Functions;
 using EfCoreTopics.Database.Models.NonKeyModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,7 +38,7 @@ public class AdventureWorksContext : DbContext
         if (!optionsBuilder.IsConfigured)
             optionsBuilder.UseSqlServer("Server=.;Database=AdventureWorks;Trusted_Connection=True;");
 
-        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
+        //optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -791,23 +792,53 @@ public class AdventureWorksContext : DbContext
             entity.Property(e => e.Wheel).HasMaxLength(256);
         });
 
+        #region Keyless Entities
+
         modelBuilder.Entity<CityWithProvince>(e =>
         {
             e.HasNoKey();
             e.Property(x => x.Id).HasColumnName("AddressID");
             e.Property(x => x.Provice).HasColumnName("StateProvince");
         });
+
+        #endregion
+
+        #region Functions
+
+        modelBuilder
+            .HasDbFunction(typeof(AdventureWorksContext).GetMethod(nameof(GetCustomerInformation), new[] { typeof(int) })!)
+            .HasName("ufnGetCustomerInformation");
+
+        modelBuilder.Entity<CustomerInformation>().HasNoKey();
+
+        modelBuilder
+            .HasDbFunction(typeof(AdventureWorksContext).GetMethod(nameof(GetAllCategories))!)
+            .HasName("ufnGetAllCategories");
+
+        modelBuilder.Entity<Category>(e =>
+        {
+            e.HasNoKey();
+            e.Property(x => x.ProductCategoryId).HasColumnName("ProductCategoryID");
+        });
+
+        #endregion
     }
 
-    public Task<List<Address>> GetAddressNonInterpolatedAsync(int id) => 
+    public Task<List<Address>> GetAddressNonInterpolatedAsync(int id) =>
         Addresses.FromSqlRaw("SELECT * FROM [SalesLT].[Address] WHERE AddressID > {0}", id).ToListAsync();
 
     public Task<List<Address>> GetAddressInterpolatedAsync(int id) =>
         Addresses.FromSqlInterpolated($"SELECT * FROM [SalesLT].[Address] WHERE AddressID > {id}").ToListAsync();
 
-    public async Task<int> UpdateCityAddressAsync(int id, string city) => 
+    public async Task<int> UpdateCityAddressAsync(int id, string city) =>
         await Database.ExecuteSqlInterpolatedAsync($"UPDATE [SalesLT].[Address] SET City = {city} WHERE AddressID = {id}");
 
     public async Task<List<CityWithProvince>> GetCityWithProvince() => await CityWithProvinces
         .FromSqlRaw("SELECT [AddressID], [City], [StateProvince] FROM [SalesLT].[Address]").ToListAsync();
+
+    public IQueryable<CustomerInformation> GetCustomerInformation(int customerId) =>
+        FromExpression(() => GetCustomerInformation(customerId));
+
+    public IQueryable<Category> GetAllCategories() =>
+        FromExpression(() => GetAllCategories());
 }

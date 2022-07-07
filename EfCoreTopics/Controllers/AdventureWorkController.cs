@@ -34,4 +34,12 @@ public class AdventureWorkController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAddress(string contain) =>
         Ok(await _context.Addresses.Where(x => x.SearchTerm.Contains(contain)).ToListAsync());
+
+    [HttpGet]
+    public async Task<IActionResult> GetCustomerInformation(int customerId) =>
+        Ok(await _context.GetCustomerInformation(customerId).FirstOrDefaultAsync());
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllCategories() =>
+        Ok(await _context.GetAllCategories().ToListAsync());
 }
