@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Runtime.CompilerServices;
 using EfCoreTopics.Database;
 using EfCoreTopics.Database.Models;
 using EfCoreTopics.Database.ValueObjects;
@@ -13,10 +14,12 @@ namespace EfCoreTopics.Controllers;
 public class AdventureWorkController : ControllerBase
 {
     private readonly AdventureWorksContext _context;
+    private readonly ILogger<AdventureWorkController> _logger;
 
-    public AdventureWorkController(AdventureWorksContext context)
+    public AdventureWorkController(AdventureWorksContext context, ILogger<AdventureWorkController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     #region Interpolated SQL
@@ -219,6 +222,23 @@ public class AdventureWorkController : ControllerBase
     public async Task<IActionResult> GetSomeProducts()
     {
         var products = await _context.Products.AsNoTracking().TagWith("UseSp").ToListAsync();
+
+        return Ok(products);
+    }
+
+    #endregion
+
+    #region Streaming
+
+    [HttpGet]
+    public async Task<IActionResult> StreamProductPriceHistories(CancellationToken cancellationToken)
+    {
+        var products = _context.GetProductPriceHistories(cancellationToken);
+
+        await foreach (var product in products.WithCancellation(cancellationToken))
+        {
+            _logger.LogInformation(product.ToString());
+        }
 
         return Ok(products);
     }

@@ -1,10 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 using EfCoreTopics.Database.Interceptors;
 using EfCoreTopics.Database.Models;
 using EfCoreTopics.Database.Models.Functions;
 using EfCoreTopics.Database.Models.NonKeyModels;
 using EfCoreTopics.Database.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace EfCoreTopics.Database;
 
@@ -36,6 +38,7 @@ public class AdventureWorksContext : DbContext
     public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
     public virtual DbSet<CityWithProvince> CityWithProvinces { get; set; } = null!;
     public virtual DbSet<ProductPrice> ProductPrices { get; set; } = null!;
+    public virtual DbSet<ProductPriceHistory> ProductPriceHistories { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -856,6 +859,16 @@ public class AdventureWorksContext : DbContext
 
     public async Task<List<CityWithProvince>> GetCityWithProvince() => await CityWithProvinces
         .FromSqlRaw("SELECT [AddressID], [City], [StateProvince] FROM [SalesLT].[Address]").ToListAsync();
+
+    public async IAsyncEnumerable<ProductPriceHistory> GetProductPriceHistories([EnumeratorCancellation] CancellationToken cancellationToken = new())
+    {
+        var products = ProductPriceHistories.AsNoTracking().OrderBy(x => x.RegisteredDate).AsAsyncEnumerable();
+
+        await foreach (var product in products.WithCancellation(cancellationToken))
+        {
+            yield return product;
+        }
+    }
 
     public IQueryable<CustomerInformation> GetCustomerInformation(int customerId) =>
         FromExpression(() => GetCustomerInformation(customerId));
