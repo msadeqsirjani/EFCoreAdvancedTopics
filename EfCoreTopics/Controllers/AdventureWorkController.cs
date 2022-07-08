@@ -244,4 +244,32 @@ public class AdventureWorkController : ControllerBase
     }
 
     #endregion
+
+    #region HiLo
+
+    [HttpGet]
+    public async Task<IActionResult> AddSomeSpecialProduct()
+    {
+        SpecialProduct product = new()
+        {
+            Name = Guid.NewGuid().ToString(),
+            RegisteredDateTime = DateTime.Now
+        };
+
+        await _context.SpecialProducts.AddAsync(product);
+
+        SpecialProductPrice productPrice = new()
+        {
+            ProductId = product.Id,
+            Price = (decimal)Random.Shared.NextDouble() * 10000 + 10000,
+            RegisteredDate = DateTime.Now
+        };
+
+        await _context.SpecialProductPrices.AddAsync(productPrice);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    #endregion
 }

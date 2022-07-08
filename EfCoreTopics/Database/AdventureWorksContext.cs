@@ -39,6 +39,8 @@ public class AdventureWorksContext : DbContext
     public virtual DbSet<CityWithProvince> CityWithProvinces { get; set; } = null!;
     public virtual DbSet<ProductPrice> ProductPrices { get; set; } = null!;
     public virtual DbSet<ProductPriceHistory> ProductPriceHistories { get; set; } = null!;
+    public virtual DbSet<SpecialProduct> SpecialProducts { get; set; } = null!;
+    public virtual DbSet<SpecialProductPrice> SpecialProductPrices { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -843,6 +845,31 @@ public class AdventureWorksContext : DbContext
             //        value => JsonSerializer.Deserialize<Money>(value, (JsonSerializerOptions) null));
 
             e.OwnsOne(x => x.Money);
+        });
+
+        #endregion
+
+        #region HiLo
+
+        modelBuilder.Entity<SpecialProduct>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(100);
+            entity.Property(x => x.Id).UseHiLo("SpecialProductSequence");
+        });
+
+        modelBuilder.HasSequence("SpecialProductSequence", builder =>
+        {
+            builder.StartsAt(10);
+            builder.IncrementsBy(5);
+        });
+
+        modelBuilder.Entity<SpecialProductPrice>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.SpecialProduct)
+                .WithMany(x => x.SpecialProductPrices)
+                .HasForeignKey(x => x.ProductId);
         });
 
         #endregion
