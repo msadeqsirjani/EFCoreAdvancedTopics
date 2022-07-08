@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using EfCoreTopics.Database.Interceptors;
 using EfCoreTopics.Database.Models;
 using EfCoreTopics.Database.Models.Functions;
 using EfCoreTopics.Database.Models.NonKeyModels;
@@ -40,6 +41,8 @@ public class AdventureWorksContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
             optionsBuilder.UseSqlServer("Server=.;Database=AdventureWorks;Trusted_Connection=True;");
+
+        optionsBuilder.AddInterceptors(new UseStoreProcedureInterceptor());
 
         //optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
     }

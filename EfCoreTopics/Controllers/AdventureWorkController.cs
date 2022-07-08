@@ -212,4 +212,16 @@ public class AdventureWorkController : ControllerBase
     }
 
     #endregion
+
+    #region Interceptor
+
+    [HttpGet]
+    public async Task<IActionResult> GetSomeProducts()
+    {
+        var products = await _context.Products.AsNoTracking().TagWith("UseSp").ToListAsync();
+
+        return Ok(products);
+    }
+
+    #endregion
 }
