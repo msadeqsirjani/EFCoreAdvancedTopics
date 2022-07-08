@@ -8,7 +8,7 @@ namespace EfCoreTopics.Database.Interceptors;
 public class UseStoreProcedureInterceptor : DbCommandInterceptor
 {
     public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result,
-        CancellationToken cancellationToken = new CancellationToken())
+        CancellationToken cancellationToken = new())
     {
         if (!command.CommandText.StartsWith("-- UseSp", StringComparison.CurrentCultureIgnoreCase))
             return new InterceptionResult<DbDataReader>();
@@ -27,9 +27,9 @@ public class UseStoreProcedureInterceptor : DbCommandInterceptor
             return new InterceptionResult<DbDataReader>();
 
         sqlCommand.AppendLine(
-            $"IF NOT EXISTS(SELECT * FROM [sys].[objects] WHERE [type] = 'P' AND OBJECT_ID = OBJECT_ID('dbo.{tableName}SP'))");
+            $"IF NOT EXISTS(SELECT * FROM [sys].[objects] WHERE [type] = 'P' AND OBJECT_ID = OBJECT_ID('dbo.{tableName}SP'));");
         
-        sqlCommand.AppendLine($"EXEC ('CREATE PROCEDURE [dbo].[{tableName}SP] AS {command.CommandText}')");
+        sqlCommand.AppendLine($"EXEC ('CREATE PROCEDURE [dbo].[{tableName}SP] AS {command.CommandText}');");
 
         sqlCommand.AppendLine($"EXEC [dbo].[{tableName}SP];");
 
