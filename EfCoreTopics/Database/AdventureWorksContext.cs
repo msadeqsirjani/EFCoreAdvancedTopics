@@ -1,6 +1,8 @@
-﻿using EfCoreTopics.Database.Models;
+﻿using System.Text.Json;
+using EfCoreTopics.Database.Models;
 using EfCoreTopics.Database.Models.Functions;
 using EfCoreTopics.Database.Models.NonKeyModels;
+using EfCoreTopics.Database.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace EfCoreTopics.Database;
@@ -32,6 +34,7 @@ public class AdventureWorksContext : DbContext
     public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
     public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
     public virtual DbSet<CityWithProvince> CityWithProvinces { get; set; } = null!;
+    public virtual DbSet<ProductPrice> ProductPrices { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -819,6 +822,21 @@ public class AdventureWorksContext : DbContext
         {
             e.HasNoKey();
             e.Property(x => x.ProductCategoryId).HasColumnName("ProductCategoryID");
+        });
+
+        #endregion
+
+        #region Value Convertion
+
+        modelBuilder.Entity<ProductPrice>(e =>
+        {
+            e.ToTable("ProductPrice", "SalesLT");
+
+            //e.Property(x => x.Money)
+            //    .HasConversion(money => JsonSerializer.Serialize(money, (JsonSerializerOptions) null),
+            //        value => JsonSerializer.Deserialize<Money>(value, (JsonSerializerOptions) null));
+
+            e.OwnsOne(x => x.Money);
         });
 
         #endregion

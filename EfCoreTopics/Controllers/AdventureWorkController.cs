@@ -1,5 +1,6 @@
 ﻿using EfCoreTopics.Database;
 using EfCoreTopics.Database.Models;
+using EfCoreTopics.Database.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -134,6 +135,29 @@ public class AdventureWorkController : ControllerBase
         var products = await _context.Products.AsNoTracking().ToListAsync();
 
         return Ok(products.Take(start..(start + end)));
+    }
+
+    #endregion
+
+    #region Value Convertion
+
+    [HttpPost]
+    public async Task<IActionResult> AddProductPrice(string name, decimal price, MoneyType unit)
+    {
+        var productPrice = new ProductPrice(Guid.NewGuid(), name, DateTime.Now, new Money(price, unit));
+
+        await _context.ProductPrices.AddAsync(productPrice);
+        await _context.SaveChangesAsync();
+
+        return Ok(productPrice);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetProductPrices(MoneyType unit)
+    {
+        var productPrices = await _context.ProductPrices.AsNoTracking().Where(x=>x.Money.Unit == unit).ToListAsync();
+
+        return Ok(productPrices);
     }
 
     #endregion
